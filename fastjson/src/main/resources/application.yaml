@@ -1,0 +1,17 @@
+server:
+  port: 12002
+
+spring:
+  redis:
+    host: 127.0.0.1
+    password: root
+    port: 6379
+    database: 0
+    timeout: 10s
+    client-type: lettuce
+    lettuce:
+      pool:
+        max-active: 1000
+        max-idle: 300
+        min-idle: 3
+        max-wait: -1
