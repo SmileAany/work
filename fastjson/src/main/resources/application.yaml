@@ -2,16 +2,24 @@ server:
   port: 12002
 
 spring:
+  profiles:
+    active: test
   redis:
     host: 127.0.0.1
-    password: root
     port: 6379
+    password: root
     database: 0
-    timeout: 10s
+    timeout: 60s
     client-type: lettuce
     lettuce:
       pool:
-        max-active: 1000
-        max-idle: 300
-        min-idle: 3
-        max-wait: -1
+        max-active: 18
+        max-idle: 16
+        min-idle: 0
+        max-wait: 5s
+
+logging:
+  file:
+    path: ./logs
+  level:
+    name: debug

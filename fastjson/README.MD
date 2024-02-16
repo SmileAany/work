@@ -319,5 +319,108 @@ public class RedisConfiguration {
 }
 ```
 
+* 配置redis多数据库
+```java
+package com.fs.work.fastjson.config;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.serializer.StringRedisSerializer;
+/**
+ * @author: smile
+ * @title:
+ * @projectName: sso
+ * @description: TODO
+ * @date: 2024/1/19 16:27
+ */
+@Configuration
+public class RedisConfiguration {
+    /**
+    * 默认库
+    **/
+    @Bean(name = "redisTemplate")
+    public RedisTemplate<String, Object> redisTemplate(LettuceConnectionFactory lettuceConnectionFactory) {
+        return createRedisTemplate(lettuceConnectionFactory, 0);
+    }
+
+    /**
+     * 1号库
+     **/
+    @Bean(name = "firstTemplate")
+    public RedisTemplate<String, Object> firstTemplate(LettuceConnectionFactory lettuceConnectionFactory) {
+        return createRedisTemplate(lettuceConnectionFactory, 1);
+    }
+
+    /**
+     * 2号库
+     **/
+    @Bean(name = "secondTemplate")
+    public RedisTemplate<String, Object> secondTemplate(LettuceConnectionFactory lettuceConnectionFactory) {
+        return createRedisTemplate(lettuceConnectionFactory, 2);
+    }
+
+    /**
+     * 3号库
+     **/
+    @Bean(name = "thirdTemplate")
+    public RedisTemplate<String, Object> thirdTemplate(LettuceConnectionFactory lettuceConnectionFactory) {
+        return createRedisTemplate(lettuceConnectionFactory, 3);
+    }
+
+    /***
+     * 创建redis工具模板
+     * @param lettuceConnectionFactory lettuceConnectionFactory
+     * @param database 数据库
+     * @author smile
+     * @date 2024/2/16 14:29
+     * @return org.springframework.data.redis.core.RedisTemplate<java.lang.String,java.lang.Object>
+    **/
+    private RedisTemplate<String, Object> createRedisTemplate(LettuceConnectionFactory lettuceConnectionFactory, int database) {
+        // 需要创建一个新的连接工厂，因为在调用PropertiesSet后它是不可变的
+        LettuceConnectionFactory newConnectionFactory = createConnectionFactory(lettuceConnectionFactory, database);
+
+        RedisTemplate<String, Object> template = new RedisTemplate<>();
+        template.setConnectionFactory(newConnectionFactory);
+
+        // 设置 key 的序列化方式为 String 类型
+        template.setKeySerializer(new StringRedisSerializer());
+
+        // 设置 value 的序列化方式为 Fastjson
+        FastJson2RedisSerializer<Object> fastJson2RedisSerializer = new FastJson2RedisSerializer<>(Object.class);
+        template.setValueSerializer(fastJson2RedisSerializer);
+
+        // Hash 结构下 field 和 value 的序列化方式为 Fastjson
+        template.setHashKeySerializer(new StringRedisSerializer());
+        template.setHashValueSerializer(fastJson2RedisSerializer);
+
+        template.afterPropertiesSet();
+        return template;
+    }
+
+    /**
+     * 创建连接工厂
+     * @param lettuceConnectionFactory lettuceConnectionFactory
+     * @param database 数据库
+     * @author smile
+     * @date 2024/2/16 14:31
+     * @return org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory
+    **/
+    private LettuceConnectionFactory createConnectionFactory(LettuceConnectionFactory lettuceConnectionFactory, int database) {
+        lettuceConnectionFactory.afterPropertiesSet();
+
+        LettuceConnectionFactory newConnectionFactory = new LettuceConnectionFactory(lettuceConnectionFactory.getStandaloneConfiguration());
+        newConnectionFactory.setDatabase(database);
+        newConnectionFactory.setShareNativeConnection(lettuceConnectionFactory.getShareNativeConnection());
+        newConnectionFactory.setValidateConnection(lettuceConnectionFactory.getValidateConnection());
+        newConnectionFactory.afterPropertiesSet();
+
+        return newConnectionFactory;
+    }
+}
+
+```
+
 ##### 参考文档：
 https://github.com/alibaba/fastjson2/blob/main/docs/spring_support_cn.md

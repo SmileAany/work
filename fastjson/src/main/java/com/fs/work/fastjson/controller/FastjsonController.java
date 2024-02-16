@@ -27,8 +27,6 @@ public class FastjsonController {
     public Students testFastJsonRedis() {
         Students students = new Students(1, "FS001", 28, "smile", null);
 
-        redisTemplate.opsForValue().set("admin",students);
-
         return students;
     }
 }
